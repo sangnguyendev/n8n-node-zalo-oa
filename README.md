@@ -36,90 +36,161 @@ Nếu bạn thấy dự án này hữu ích và muốn hỗ trợ phát triển,
 
 Mỗi đóng góp đều rất có ý nghĩa và giúp duy trì dự án này!
 
+## Tác giả
+- Phạm Sỹ Cang - ChickenAI Team
+
 ## Cài đặt
 
-### Cài đặt từ npm
+### Cài đặt n8n Community Node
+
+Có nhiều cách để cài đặt n8n community node, tùy thuộc vào cách bạn đã cài đặt n8n:
+
+#### 1. Cài đặt trong n8n website
+
+Các bước cài đặt:
+
+- Mở n8n website
+- Vào **Settings** > **Community Nodes**
+- Nhấp vào **Install** và nhập tên package: `n8n-nodes-zalo-oa-integration`
+- Nhấp vào **Install** và khởi động lại n8n khi được nhắc
+
+#### 2. Cài đặt trong n8n Docker
+
+Các bước cài đặt:
+
+- Tạo thư mục custom cho n8n:
 
 ```bash
-npm install n8n-nodes-zalo-oa-intergration
+mkdir -p /path-to-n8n-data/custom
 ```
 
-### Cài đặt thủ công
+- Thêm volume vào docker-compose.yml:
 
-Bước 1: Clone repository:
-
-```bash
-git clone https://github.com/zalo-oa/n8n-nodes-zalo-oa.git
+```yaml
+volumes:
+  - /path-to-n8n-data/custom:/home/node/.n8n/custom
 ```
 
-Bước 2: Build node:
+- Cài đặt node trong container:
 
 ```bash
-cd n8n-nodes-zalo-oa-integration
+docker-compose exec n8n npm install n8n-nodes-zalo-oa-integration
+```
+
+- Khởi động lại container:
+
+```bash
+docker-compose restart n8n
+```
+
+#### 3. Cài đặt từ npm (cài đặt toàn cục)
+
+```bash
+npm install -g n8n-nodes-zalo-oa-integration
+```
+
+#### 4. Cài đặt từ npm (cài đặt cục bộ)
+
+```bash
+npm install n8n-nodes-zalo-oa-integration
+```
+
+#### 5. Cài đặt thủ công
+
+Các bước cài đặt thủ công:
+
+- Clone repository:
+
+```bash
+git clone https://github.com/ChickenAI/zalo-node-oa.git
+```
+
+- Build node:
+
+```bash
+cd zalo-node-oa
 npm install
 npm run build
 ```
 
-Bước 3: Copy thư mục `dist` vào thư mục custom của n8n:
+- Copy thư mục `dist` vào thư mục custom của n8n:
 
 ```bash
+# Linux/macOS
 cp -r dist/* ~/.n8n/custom/
+
+# Windows
+xcopy /E dist\* %APPDATA%\n8n\custom\
 ```
 
 ## Hướng dẫn sử dụng
 
 ### Thiết lập xác thực
 
-1. Tạo Zalo OA tại [Zalo Business](https://business.zalo.me/)
-2. Đăng ký ứng dụng tại [Zalo Developers](https://developers.zalo.me/)
-3. Lấy App ID, Secret Key, Access Token và OA ID
-4. Trong n8n, tạo credential mới cho Zalo OA API
+Các bước thiết lập:
+
+- Tạo Zalo OA tại [Zalo Business](https://business.zalo.me/)
+- Đăng ký ứng dụng tại [Zalo Developers](https://developers.zalo.me/)
+- Lấy App ID, Secret Key, Access Token và OA ID
+- Trong n8n, tạo credential mới cho Zalo OA API
 
 ### Sử dụng Node Zalo OA
 
 #### Gửi tin nhắn văn bản
 
-1. Thêm node Zalo OA vào workflow
-2. Chọn operation "Gửi Tin Nhắn Văn Bản"
-3. Nhập User ID và nội dung tin nhắn
-4. Chạy workflow
+Các bước thực hiện:
+
+- Thêm node Zalo OA vào workflow
+- Chọn operation "Gửi Tin Nhắn Văn Bản"
+- Nhập User ID và nội dung tin nhắn
+- Chạy workflow
 
 #### Upload hình ảnh
 
-1. Thêm node Zalo OA vào workflow
-2. Chọn operation "Upload Hình Ảnh"
-3. Chọn nguồn hình ảnh (URL hoặc Binary Data)
-4. Chạy workflow để lấy ID hình ảnh
+Các bước thực hiện:
+
+- Thêm node Zalo OA vào workflow
+- Chọn operation "Upload Hình Ảnh"
+- Chọn nguồn hình ảnh (URL hoặc Binary Data)
+- Chạy workflow để lấy ID hình ảnh
 
 ### Sử dụng Node Zalo OA Webhook
 
-1. Thêm node Zalo OA Webhook vào workflow
-2. Nhập OA Secret Key
-3. Chọn các loại sự kiện muốn nhận
-4. Kích hoạt workflow để lấy URL webhook
-5. Cấu hình URL webhook trong trang quản lý Zalo OA
+Các bước thiết lập webhook:
+
+- Thêm node Zalo OA Webhook vào workflow
+- Nhập OA Secret Key
+- Chọn các loại sự kiện muốn nhận
+- Kích hoạt workflow để lấy URL webhook
+- Cấu hình URL webhook trong trang quản lý Zalo OA
 
 ## Ví dụ workflow
 
 ### Gửi tin nhắn chào mừng khi có người theo dõi mới
 
-1. Thêm node Zalo OA Webhook (lọc sự kiện "follow")
-2. Thêm node Zalo OA để gửi tin nhắn chào mừng
-3. Kết nối các node và kích hoạt workflow
+Các bước thực hiện:
+
+- Thêm node Zalo OA Webhook (lọc sự kiện "follow")
+- Thêm node Zalo OA để gửi tin nhắn chào mừng
+- Kết nối các node và kích hoạt workflow
 
 ### Trả lời tự động tin nhắn của người dùng
 
-1. Thêm node Zalo OA Webhook (lọc sự kiện "user_send_text")
-2. Thêm node Function để xử lý nội dung tin nhắn
-3. Thêm node Zalo OA để gửi tin nhắn trả lời
-4. Kết nối các node và kích hoạt workflow
+Các bước thực hiện:
+
+- Thêm node Zalo OA Webhook (lọc sự kiện "user_send_text")
+- Thêm node Function để xử lý nội dung tin nhắn
+- Thêm node Zalo OA để gửi tin nhắn trả lời
+- Kết nối các node và kích hoạt workflow
 
 ## Lưu ý quan trọng
 
-1. **Rate Limit**: Zalo OA API có giới hạn số lượng request, thường là 10 requests/giây
-2. **Access Token**: Access Token có thời hạn sử dụng, cần cập nhật khi hết hạn
-3. **HTTPS**: Zalo OA yêu cầu webhook phải sử dụng HTTPS
-4. **Xác thực MAC**: Nên bật tính năng này để đảm bảo an toàn cho webhook
+Một số lưu ý khi sử dụng Zalo OA API:
+
+- **Rate Limit**: Zalo OA API có giới hạn số lượng request, thường là 10 requests/giây
+- **Access Token**: Access Token có thời hạn sử dụng, cần cập nhật khi hết hạn
+- **HTTPS**: Zalo OA yêu cầu webhook phải sử dụng HTTPS
+- **Xác thực MAC**: Nên bật tính năng này để đảm bảo an toàn cho webhook
 
 ## Tài liệu tham khảo
 
