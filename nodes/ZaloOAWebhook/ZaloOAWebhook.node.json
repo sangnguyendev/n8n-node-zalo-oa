@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-base.zaloOAWebhook",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication", "Marketing"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://developers.zalo.me/docs/api/official-account-api/phu-luc/official-account-access-token-post-4307"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://developers.zalo.me/docs/api/official-account-api/webhook/gioi-thieu-ve-webhook-post-4219"
+			}
+		]
+	}
+}
