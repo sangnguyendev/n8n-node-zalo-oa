@@ -26,6 +26,16 @@ Node webhook để nhận và xử lý các sự kiện từ Zalo OA:
 - **Người dùng tương tác**: nhấp vào nút, liên kết
 - **Xác thực MAC**: đảm bảo an toàn cho webhook
 
+## Mua cho tôi 1 ly cafe
+
+Nếu bạn thấy dự án này hữu ích và muốn hỗ trợ phát triển, bạn có thể mua cho tôi một ly cafe:
+![Phạm Sỹ Cang](image.png)
+
+- Momo: 0973781781
+- Zalo: 0973781781
+
+Mỗi đóng góp đều rất có ý nghĩa và giúp duy trì dự án này!
+
 ## Cài đặt
 
 ### Cài đặt từ npm
