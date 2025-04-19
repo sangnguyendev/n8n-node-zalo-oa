@@ -1,12 +1,13 @@
 {
   "name": "n8n-nodes-zalo-oa-integration",
-  "version": "0.2.0",
-  "description": "Tích hợp Zalo Official Account API v3.0 vào n8n",
+  "version": "0.4.6",
+  "description": "Tích hợp Zalo Official Account API v3.0 với MessageV3 API vào n8n",
   "keywords": [
     "n8n-community-node-package",
     "zalo",
     "zalo-oa",
     "zalo-api-v3",
+    "zalo-messagev3",
     "messaging"
   ],
   "license": "MIT",
@@ -50,6 +51,8 @@
     ]
   },
   "devDependencies": {
+    "@types/form-data": "^2.5.0",
+    "@types/node": "^20.10.0",
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
@@ -59,7 +62,8 @@
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
+    "sqlite3": "^5.1.7"
   },
   "peerDependencies": {
     "n8n-workflow": "*"

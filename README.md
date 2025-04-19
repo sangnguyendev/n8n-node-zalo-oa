@@ -187,7 +187,7 @@ Các bước thực hiện:
 
 Một số lưu ý khi sử dụng Zalo OA API:
 
-- **API v3.0**: Bộ node này sử dụng Zalo OA API v3.0, đã nâng cấp từ phiên bản v2.0 cũ
+- **API v3.0 với MessageV3**: Bộ node này sử dụng Zalo OA API v3.0 với MessageV3 API, hỗ trợ các loại tin nhắn khác nhau (Tư vấn, Giao dịch, Truyền thông cá nhân)
 - **Rate Limit**: Zalo OA API có giới hạn số lượng request, thường là 10 requests/giây
 - **Access Token**: Access Token có thời hạn sử dụng, cần cập nhật khi hết hạn
 - **HTTPS**: Zalo OA yêu cầu webhook phải sử dụng HTTPS

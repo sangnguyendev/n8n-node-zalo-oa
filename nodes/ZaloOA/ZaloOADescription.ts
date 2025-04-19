@@ -74,9 +74,70 @@ export const zaloOAOperations: INodeProperties[] = [
 
 // Các trường cho từng operation
 export const zaloOAFields: INodeProperties[] = [
+	// Trường loại tin nhắn chung cho tất cả các loại tin nhắn
+	{
+		displayName: 'Message Type',
+		name: 'messageType',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: {
+			show: {
+				resource: ['zaloOA'],
+				operation: ['sendTextMessage', 'sendImageMessage', 'sendFileMessage', 'sendListMessage'],
+			},
+		},
+		options: [
+			{
+				name: 'Tin Tư Vấn (Customer Service)',
+				value: 'cs',
+				description: 'Dùng để gửi tin nhắn tư vấn đến người theo dõi',
+			},
+			{
+				name: 'Tin Giao Dịch (Transaction)',
+				value: 'transaction',
+				description: 'Dùng để gửi tin nhắn giao dịch đến người theo dõi',
+			},
+			{
+				name: 'Tin Truyền Thông Cá Nhân (Promotion)',
+				value: 'promotion',
+				description: 'Dùng để gửi tin nhắn truyền thông cá nhân đến người theo dõi',
+			},
+		],
+		default: 'cs',
+	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                            zaloOA:sendTextMessage                          */
 	/* -------------------------------------------------------------------------- */
+	// {
+	// 	displayName: 'Message Type',
+	// 	name: 'messageType',
+	// 	type: 'options',
+	// 	default: 'cs',
+	// 	displayOptions: {
+	// 		show: {
+	// 			resource: ['zaloOA'],
+	// 			operation: ['sendTextMessage'],
+	// 		},
+	// 	},
+	// 	options: [
+	// 		{
+	// 			name: 'Tin Tư Vấn (Customer Service)',
+	// 			value: 'cs',
+	// 			description: 'Dùng để gửi tin nhắn tư vấn đến người theo dõi',
+	// 		},
+	// 		{
+	// 			name: 'Tin Giao Dịch (Transaction)',
+	// 			value: 'transaction',
+	// 			description: 'Dùng để gửi tin nhắn giao dịch đến người theo dõi',
+	// 		},
+	// 		{
+	// 			name: 'Tin Truyền Thông Cá Nhân (Promotion)',
+	// 			value: 'promotion',
+	// 			description: 'Dùng để gửi tin nhắn truyền thông cá nhân đến người theo dõi',
+	// 		},
+	// 	]
+	// },
 	{
 		displayName: 'User ID',
 		name: 'userId',

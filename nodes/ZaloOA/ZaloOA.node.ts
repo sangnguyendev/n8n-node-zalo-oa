@@ -3,8 +3,24 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
+
+/**
+ * Zalo OA API v3.0 Implementation
+ *
+ * Changes from v2.0 to v3.0:
+ * - MessageV2 API has been deprecated and shut down
+ * - MessageV3 API requires specifying the message type in the endpoint:
+ *   - Customer Service: /message/cs
+ *   - Transaction: /message/transaction
+ *   - Promotion: /message/promotion
+ *
+ * This implementation uses the v3.0 API base URL and proper message endpoints
+ * with the required message types passed as parameters.
+ */
+
 import { zaloOAOperations, zaloOAFields } from './ZaloOADescription';
 import axios from 'axios';
 import FormData from 'form-data';
@@ -21,8 +37,8 @@ export class ZaloOA implements INodeType {
 		defaults: {
 			name: 'Zalo OA',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'zaloOAApi',
@@ -68,8 +84,12 @@ export class ZaloOA implements INodeType {
 						const userId = this.getNodeParameter('userId', i) as string;
 						const text = this.getNodeParameter('text', i) as string;
 
+						// Get message type (cs, transaction, promotion)
+						const messageType = this.getNodeParameter('messageType', i) as string || "cs";
+
+						// MessageV3 API format
 						const response = await axios.post(
-							`${baseUrl}/message/cs`,
+							`${baseUrl}/message/${messageType}`,
 							{
 								recipient: {
 									user_id: userId,
@@ -81,6 +101,7 @@ export class ZaloOA implements INodeType {
 							{
 								headers: {
 									access_token: accessToken,
+									'Content-Type': 'application/json',
 								},
 							},
 						);
@@ -129,8 +150,12 @@ export class ZaloOA implements INodeType {
 							};
 						}
 
+						// Get message type (cs, transaction, promotion)
+						const messageType = this.getNodeParameter('messageType', i) as string;
+
+						// MessageV3 API format
 						const response = await axios.post(
-							`${baseUrl}/message/cs`,
+							`${baseUrl}/message/${messageType}`,
 							{
 								recipient: {
 									user_id: userId,
@@ -142,6 +167,7 @@ export class ZaloOA implements INodeType {
 							{
 								headers: {
 									access_token: accessToken,
+									'Content-Type': 'application/json',
 								},
 							},
 						);
@@ -159,8 +185,12 @@ export class ZaloOA implements INodeType {
 						const userId = this.getNodeParameter('userId', i) as string;
 						const fileId = this.getNodeParameter('fileId', i) as string;
 
+						// Get message type (cs, transaction, promotion)
+						const messageType = this.getNodeParameter('messageType', i) as string;
+
+						// MessageV3 API format
 						const response = await axios.post(
-							`${baseUrl}/message/cs`,
+							`${baseUrl}/message/${messageType}`,
 							{
 								recipient: {
 									user_id: userId,
@@ -177,6 +207,7 @@ export class ZaloOA implements INodeType {
 							{
 								headers: {
 									access_token: accessToken,
+									'Content-Type': 'application/json',
 								},
 							},
 						);
@@ -212,8 +243,12 @@ export class ZaloOA implements INodeType {
 							},
 						}));
 
+						// Get message type (cs, transaction, promotion)
+						const messageType = this.getNodeParameter('messageType', i) as string;
+
+						// MessageV3 API format
 						const response = await axios.post(
-							`${baseUrl}/message/cs`,
+							`${baseUrl}/message/${messageType}`,
 							{
 								recipient: {
 									user_id: userId,
@@ -240,6 +275,7 @@ export class ZaloOA implements INodeType {
 							{
 								headers: {
 									access_token: accessToken,
+									'Content-Type': 'application/json',
 								},
 							},
 						);
@@ -305,6 +341,7 @@ export class ZaloOA implements INodeType {
 								{
 									headers: {
 										access_token: accessToken,
+										'Content-Type': 'application/json',
 									},
 								},
 							);
@@ -350,6 +387,7 @@ export class ZaloOA implements INodeType {
 								{
 									headers: {
 										access_token: accessToken,
+										'Content-Type': 'application/json',
 									},
 								},
 							);
@@ -400,6 +438,7 @@ export class ZaloOA implements INodeType {
 							{
 								headers: {
 									access_token: accessToken,
+									'Content-Type': 'application/json',
 								},
 							},
 						);

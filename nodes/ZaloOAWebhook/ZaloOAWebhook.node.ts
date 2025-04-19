@@ -5,6 +5,7 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
 import * as crypto from 'crypto';
@@ -21,7 +22,7 @@ export class ZaloOAWebhook implements INodeType {
 			name: 'Zalo OA Webhook',
 		},
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'zaloOAApi',
