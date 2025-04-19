@@ -57,7 +57,7 @@ export class ZaloOA implements INodeType {
 
 		// Lấy access token từ credentials
 		const accessToken = credentials.accessToken as string;
-		const baseUrl = 'https://openapi.zalo.me/v2.0/oa';
+		const baseUrl = 'https://openapi.zalo.me/v3.0/oa';
 
 		// Xử lý các operations khác nhau
 		for (let i = 0; i < items.length; i++) {
@@ -69,7 +69,7 @@ export class ZaloOA implements INodeType {
 						const text = this.getNodeParameter('text', i) as string;
 
 						const response = await axios.post(
-							`${baseUrl}/message`,
+							`${baseUrl}/message/cs`,
 							{
 								recipient: {
 									user_id: userId,
@@ -130,7 +130,7 @@ export class ZaloOA implements INodeType {
 						}
 
 						const response = await axios.post(
-							`${baseUrl}/message`,
+							`${baseUrl}/message/cs`,
 							{
 								recipient: {
 									user_id: userId,
@@ -160,7 +160,7 @@ export class ZaloOA implements INodeType {
 						const fileId = this.getNodeParameter('fileId', i) as string;
 
 						const response = await axios.post(
-							`${baseUrl}/message`,
+							`${baseUrl}/message/cs`,
 							{
 								recipient: {
 									user_id: userId,
@@ -213,7 +213,7 @@ export class ZaloOA implements INodeType {
 						}));
 
 						const response = await axios.post(
-							`${baseUrl}/message`,
+							`${baseUrl}/message/cs`,
 							{
 								recipient: {
 									user_id: userId,

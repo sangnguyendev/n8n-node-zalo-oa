@@ -8,7 +8,7 @@ import {
 export class ZaloOAApi implements ICredentialType {
 	name = 'zaloOAApi';
 	displayName = 'Zalo OA API';
-	documentationUrl = 'https://developers.zalo.me/docs/api/official-account-api-147';
+	documentationUrl = 'https://developers.zalo.me/docs/api/official-account-api-230';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'App ID',
@@ -60,7 +60,7 @@ export class ZaloOAApi implements ICredentialType {
 	// Kiểm tra credentials có hoạt động không
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://openapi.zalo.me/v2.0/oa',
+			baseURL: 'https://openapi.zalo.me/v3.0/oa',
 			url: '/getprofile',
 			method: 'GET',
 		},

@@ -1,11 +1,12 @@
 {
   "name": "n8n-nodes-zalo-oa-integration",
-  "version": "0.1.3",
-  "description": "Tích hợp Zalo Official Account vào n8n",
+  "version": "0.2.0",
+  "description": "Tích hợp Zalo Official Account API v3.0 vào n8n",
   "keywords": [
     "n8n-community-node-package",
     "zalo",
     "zalo-oa",
+    "zalo-api-v3",
     "messaging"
   ],
   "license": "MIT",

@@ -1,6 +1,6 @@
 # n8n-nodes-zalo-oa
 
-Bộ node tích hợp Zalo Official Account (OA) vào n8n, cho phép tự động hóa tương tác với người dùng Zalo thông qua Zalo OA API.
+Bộ node tích hợp Zalo Official Account (OA) vào n8n, cho phép tự động hóa tương tác với người dùng Zalo thông qua Zalo OA API v3.0.
 
 [n8n](https://n8n.io/) là nền tảng tự động hóa quy trình làm việc được cấp phép [fair-code](https://docs.n8n.io/reference/license/).
 
@@ -187,6 +187,7 @@ Các bước thực hiện:
 
 Một số lưu ý khi sử dụng Zalo OA API:
 
+- **API v3.0**: Bộ node này sử dụng Zalo OA API v3.0, đã nâng cấp từ phiên bản v2.0 cũ
 - **Rate Limit**: Zalo OA API có giới hạn số lượng request, thường là 10 requests/giây
 - **Access Token**: Access Token có thời hạn sử dụng, cần cập nhật khi hết hạn
 - **HTTPS**: Zalo OA yêu cầu webhook phải sử dụng HTTPS
@@ -194,7 +195,7 @@ Một số lưu ý khi sử dụng Zalo OA API:
 
 ## Tài liệu tham khảo
 
-- [Tài liệu Zalo OA API](https://developers.zalo.me/docs/api/official-account-api-147)
+- [Tài liệu Zalo OA API](https://developers.zalo.me/docs/api/official-account-api-230)
 - [Tài liệu n8n Community Nodes](https://docs.n8n.io/integrations/creating-nodes/)
 
 ## Đóng góp
