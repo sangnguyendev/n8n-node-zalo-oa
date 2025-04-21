@@ -450,6 +450,337 @@ export class ZaloOA implements INodeType {
 							},
 						});
 					}
+
+					// Lấy thông tin Official Account
+					else if (operation === 'getOAProfile') {
+						// API GET OA Profile không cần tham số bổ sung
+						const response = await axios.get(
+							`${baseUrl}/getoa`,
+							{
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Lấy danh sách người theo dõi
+					else if (operation === 'getFollowers') {
+						const offset = this.getNodeParameter('offset', i) as number;
+						const count = this.getNodeParameter('count', i) as number;
+
+						// API GET Followers
+						const response = await axios.get(
+							`${baseUrl}/getfollowers`,
+							{
+								params: {
+									offset,
+									count: Math.min(count, 50), // Giới hạn tối đa 50 người theo dõi mỗi lần gọi
+								},
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Upload GIF image
+					else if (operation === 'uploadGif') {
+						const binaryData = this.getNodeParameter('binaryData', i) as boolean;
+						const formData = new FormData();
+
+						if (binaryData) {
+							const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
+							const binaryFile = items[i].binary![binaryProperty];
+
+							if (binaryFile === undefined) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`No binary data property "${binaryProperty}" exists on item.`,
+									{ itemIndex: i },
+								);
+							}
+
+							const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
+							formData.append('file', buffer, {
+								filename: binaryFile.fileName || 'image.gif',
+								contentType: binaryFile.mimeType,
+							});
+						} else {
+							const gifUrl = this.getNodeParameter('gifUrl', i) as string;
+
+							// Tải GIF từ URL
+							const gifResponse = await axios.get(gifUrl, { responseType: 'arraybuffer' });
+							formData.append('file', Buffer.from(gifResponse.data), {
+								filename: 'image.gif',
+								contentType: 'image/gif',
+							});
+						}
+
+						// Gửi request để upload GIF
+						const response = await axios.post(
+							`${baseUrl}/upload/gif`,
+							formData.getBuffer(),
+							{
+								headers: {
+									...formData.getHeaders(),
+									access_token: accessToken,
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Lấy danh sách cuộc trò chuyện gần đây
+					else if (operation === 'getRecentChat') {
+						const offset = this.getNodeParameter('offset', i) as number;
+						const count = this.getNodeParameter('count', i) as number;
+
+						const response = await axios.get(`${baseUrl}/listrecentchat`, {
+							headers: {
+								access_token: accessToken,
+							},
+							params: {
+								offset,
+								count: Math.min(count, 50), // Giới hạn tối đa 50 cuộc trò chuyện mỗi lần gọi
+							},
+						});
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Lấy lịch sử hội thoại với người dùng
+					else if (operation === 'getConversation') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const offset = this.getNodeParameter('offset', i) as number;
+						const count = this.getNodeParameter('count', i) as number;
+
+						const response = await axios.get(`${baseUrl}/conversation`, {
+							headers: {
+								access_token: accessToken,
+							},
+							params: {
+								user_id: userId,
+								offset,
+								count: Math.min(count, 50), // Giới hạn tối đa 50 tin nhắn mỗi lần gọi
+							},
+						});
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Kiểm tra trạng thái tin nhắn
+					else if (operation === 'getMessageStatus') {
+						const messageId = this.getNodeParameter('messageId', i) as string;
+
+						const response = await axios.get(`${baseUrl}/getmessagestatus`, {
+							headers: {
+								access_token: accessToken,
+							},
+							params: {
+								message_id: messageId,
+							},
+						});
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Xóa tag
+					else if (operation === 'removeTag') {
+						const tagId = this.getNodeParameter('tagId', i) as string;
+
+						const response = await axios.post(
+							`${baseUrl}/tag/rmtag`,
+							{
+								tag_id: tagId,
+							},
+							{
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Xóa người theo dõi khỏi tag
+					else if (operation === 'removeFollowerFromTag') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const tagId = this.getNodeParameter('tagId', i) as string;
+
+						const response = await axios.post(
+							`${baseUrl}/tag/rmfollowerfromtag`,
+							{
+								user_id: userId,
+								tag_id: tagId,
+							},
+							{
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Cập nhật menu OA
+					else if (operation === 'updateOAMenu') {
+						const menuItemsCollection = this.getNodeParameter('menuItems', i) as {
+							menuItemsValues: Array<{
+								title: string;
+								type: string;
+								payload: string;
+							}>;
+						};
+
+						const menuItems = menuItemsCollection.menuItemsValues.map(item => {
+							let payload: string | Record<string, string>;
+
+							// Format payload based on menu type
+							if (item.type === 'oa.open.url') {
+								payload = { url: item.payload };
+							} else if (item.type === 'oa.open.phone') {
+								payload = { phone: item.payload };
+							} else if (item.type === 'oa.query.show') {
+								payload = { message: item.payload };
+							} else if (item.type === 'oa.open.app') {
+								payload = { app: item.payload };
+							} else {
+								payload = item.payload;
+							}
+
+							return {
+								title: item.title,
+								type: item.type,
+								payload,
+							};
+						});
+
+						const response = await axios.post(
+							`${baseUrl}/menu`,
+							{
+								menu_items: menuItems,
+							},
+							{
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+
+					// Cập nhật thông tin người theo dõi
+					else if (operation === 'updateFollowerInfo') {
+						const userId = this.getNodeParameter('userId', i) as string;
+						const infoType = this.getNodeParameter('infoType', i) as string;
+						const infoValue = this.getNodeParameter('infoValue', i) as string;
+
+						// Prepare data based on info type
+						const data: Record<string, any> = {
+							user_id: userId,
+						};
+
+						// Add specific field based on infoType
+						switch(infoType) {
+							case 'name':
+								data.name = infoValue;
+								break;
+							case 'phone':
+								data.phone = infoValue;
+								break;
+							case 'email':
+								data.email = infoValue;
+								break;
+							case 'address':
+								data.address = infoValue;
+								break;
+							case 'city':
+								data.city = infoValue;
+								break;
+							case 'birthday':
+								data.birthday = infoValue; // Format should be YYYY-MM-DD
+								break;
+							default:
+								break;
+						}
+
+						const response = await axios.post(
+							`${baseUrl}/updatefollowerinfo`,
+							data,
+							{
+								headers: {
+									access_token: accessToken,
+									'Content-Type': 'application/json',
+								},
+							},
+						);
+
+						returnData.push({
+							json: response.data,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-zalo-oa-integration",
-  "version": "0.4.6",
+  "version": "0.5.1",
   "description": "Tích hợp Zalo Official Account API v3.0 với MessageV3 API vào n8n",
   "keywords": [
     "n8n-community-node-package",
@@ -48,6 +48,10 @@
     "nodes": [
       "dist/nodes/ZaloOA/ZaloOA.node.js",
       "dist/nodes/ZaloOAWebhook/ZaloOAWebhook.node.js"
+    ],
+    "nodeTypes": [
+      "n8n-nodes-zalo-oa-integration.zaloOA",
+      "n8n-nodes-zalo-oa-integration.zaloOAWebhook"
     ]
   },
   "devDependencies": {

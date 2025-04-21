@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-base.zaloOAWebhook",
+	"node": "n8n-nodes-zalo-oa-integration.zaloOAWebhook",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Communication", "Marketing"],
