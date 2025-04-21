@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-zalo-oa-integration",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "description": "Tích hợp Zalo Official Account API v3.0 với MessageV3 API vào n8n",
   "keywords": [
     "n8n-community-node-package",
@@ -28,7 +28,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build": "tsc && gulp build:icons",
+    "build": "tsc && gulp build:icons && gulp build:schemas",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -38,7 +38,9 @@
   "files": [
     "dist/credentials/ZaloOAApi.credentials.js",
     "dist/nodes/ZaloOA",
-    "dist/nodes/ZaloOAWebhook"
+    "dist/nodes/ZaloOAWebhook",
+    "dist/nodes/ZaloOA/ZaloOA.node.schema.json",
+    "dist/nodes/ZaloOAWebhook/ZaloOAWebhook.node.schema.json"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,

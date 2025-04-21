@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "node": {
+      "type": "string",
+      "const": "n8n-nodes-zalo-oa-integration.zaloOAWebhook"
+    },
+    "nodeVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "webhookEndpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "const": "webhook"
+          },
+          "httpMethod": {
+            "type": "string",
+            "const": "POST"
+          },
+          "responseMode": {
+            "type": "string",
+            "const": "onReceived"
+          },
+          "responseData": {
+            "type": "string",
+            "const": "firstEntryJson"
+          }
+        },
+        "required": ["path", "httpMethod", "responseMode", "responseData"]
+      }
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "default": {
+            "type": ["string", "boolean", "array", "null"]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "value"]
+            }
+          }
+        },
+        "required": ["displayName", "name", "type"]
+      }
+    }
+  },
+  "required": ["node", "nodeVersion"]
+}

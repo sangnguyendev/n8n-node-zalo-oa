@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "node": {
+      "type": "string",
+      "const": "n8n-nodes-zalo-oa-integration.zaloOA"
+    },
+    "nodeVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "value", "description", "action"]
+      }
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "default": {
+            "type": ["string", "boolean", "array", "null", "number"]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": ["string", "number", "boolean"]
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "value"]
+            }
+          },
+          "displayOptions": {
+            "type": "object",
+            "properties": {
+              "show": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": ["string", "array"]
+                }
+              },
+              "hide": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": ["string", "array"]
+                }
+              }
+            }
+          }
+        },
+        "required": ["displayName", "name", "type"]
+      }
+    }
+  },
+  "required": ["node", "nodeVersion"]
+}

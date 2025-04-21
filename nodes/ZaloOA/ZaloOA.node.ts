@@ -292,21 +292,53 @@ export class ZaloOA implements INodeType {
 					else if (operation === 'getFollowerInfo') {
 						const userId = this.getNodeParameter('userId', i) as string;
 
-						const response = await axios.get(`${baseUrl}/getprofile`, {
-							headers: {
-								access_token: accessToken,
-							},
-							params: {
-								user_id: userId,
-							},
-						});
+						try {
+							// Sử dụng API v3.0 để lấy thông tin người theo dõi
+							// Theo hướng dẫn của Zalo, API getprofile đã được thay thế bằng API user/detail
+							const v3BaseUrl = 'https://openapi.zalo.me/v3.0/oa';
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Tạo data parameter cho API user/detail
+							const dataParam = JSON.stringify({
+								user_id: userId,
+							});
+
+							// Gọi API lấy thông tin người theo dõi
+							const response = await axios.get(
+								`${v3BaseUrl}/user/detail`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API user/detail v3.0:', error.message);
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gọi API lấy thông tin người dùng: ${error.message}`,
+									note: 'Zalo đã thay đổi API getprofile sang API user/detail trong v3.0. Vui lòng kiểm tra lại cấu hình OA và quyền truy cập.',
+									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền "Quyền quản lý thông tin người dùng" cho ứng dụng và có access_token hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Upload hình ảnh
@@ -406,22 +438,48 @@ export class ZaloOA implements INodeType {
 						const offset = this.getNodeParameter('offset', i) as number;
 						const count = this.getNodeParameter('count', i) as number;
 
-						const response = await axios.get(`${baseUrl}/tag/gettagsofoa`, {
-							headers: {
-								access_token: accessToken,
-							},
-							params: {
-								offset,
-								count,
-							},
-						});
+						try {
+							// Thử gọi API v3.0 trước
+							const response = await axios.get(`${baseUrl}/tag/gettagsofoa`, {
+								headers: {
+									access_token: accessToken,
+								},
+								params: {
+									offset,
+									count,
+								},
+							});
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API gettagsofoa v3.0:', error.message);
+							console.log('Đang thử lại với API v2.0...');
+
+							// Nếu API v3.0 thất bại, thử gọi API v2.0
+							const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
+							const response = await axios.get(`${v2BaseUrl}/tag/gettagsofoa`, {
+								headers: {
+									access_token: accessToken,
+								},
+								params: {
+									offset,
+									count,
+								},
+							});
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Gán tag cho người theo dõi
@@ -454,22 +512,48 @@ export class ZaloOA implements INodeType {
 					// Lấy thông tin Official Account
 					else if (operation === 'getOAProfile') {
 						// API GET OA Profile không cần tham số bổ sung
-						const response = await axios.get(
-							`${baseUrl}/getoa`,
-							{
-								headers: {
-									access_token: accessToken,
-									'Content-Type': 'application/json',
+						try {
+							// Thử gọi API v3.0 trước
+							const response = await axios.get(
+								`${baseUrl}/getoa`,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
 								},
-							},
-						);
+							);
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API getoa v3.0:', error.message);
+							console.log('Đang thử lại với API v2.0...');
+
+							// Nếu API v3.0 thất bại, thử gọi API v2.0
+							const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
+							const response = await axios.get(
+								`${v2BaseUrl}/getoa`,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Lấy danh sách người theo dõi
@@ -477,27 +561,55 @@ export class ZaloOA implements INodeType {
 						const offset = this.getNodeParameter('offset', i) as number;
 						const count = this.getNodeParameter('count', i) as number;
 
-						// API GET Followers
-						const response = await axios.get(
-							`${baseUrl}/getfollowers`,
-							{
-								params: {
-									offset,
-									count: Math.min(count, 50), // Giới hạn tối đa 50 người theo dõi mỗi lần gọi
-								},
-								headers: {
-									access_token: accessToken,
-									'Content-Type': 'application/json',
-								},
-							},
-						);
+						try {
+							// Sử dụng API v3.0 để lấy danh sách người theo dõi
+							// Theo hướng dẫn của Zalo, API getfollowers đã được thay thế bằng API user/getlist
+							const v3BaseUrl = 'https://openapi.zalo.me/v3.0/oa';
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Tạo data parameter cho API user/getlist
+							const dataParam = JSON.stringify({
+								offset,
+								count: Math.min(count, 50), // Giới hạn tối đa 50 người theo dõi mỗi lần gọi
+								is_follower: 'true', // Chỉ lấy người dùng đang theo dõi OA
+							});
+
+							// Gọi API lấy danh sách người theo dõi
+							const response = await axios.get(
+								`${v3BaseUrl}/user/getlist`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API user/getlist v3.0:', error.message);
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gọi API lấy danh sách người theo dõi: ${error.message}`,
+									note: 'Zalo đã thay đổi API getfollowers sang API user/getlist trong v3.0. Vui lòng kiểm tra lại cấu hình OA và quyền truy cập.',
+									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền đầy đủ cho ứng dụng và có access_token hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Upload GIF image
@@ -558,22 +670,53 @@ export class ZaloOA implements INodeType {
 						const offset = this.getNodeParameter('offset', i) as number;
 						const count = this.getNodeParameter('count', i) as number;
 
-						const response = await axios.get(`${baseUrl}/listrecentchat`, {
-							headers: {
-								access_token: accessToken,
-							},
-							params: {
-								offset,
-								count: Math.min(count, 50), // Giới hạn tối đa 50 cuộc trò chuyện mỗi lần gọi
-							},
-						});
+						try {
+							// Sử dụng API v2.0 vì API v3.0 chưa có tài liệu cho listrecentchat
+							const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Tạo data parameter cho API listrecentchat
+							const dataParam = JSON.stringify({
+								offset,
+								count: Math.min(count, 10), // Giới hạn tối đa 10 cuộc trò chuyện mỗi lần gọi theo tài liệu
+							});
+
+							// Gọi API lấy danh sách cuộc trò chuyện gần đây
+							const response = await axios.get(
+								`${v2BaseUrl}/listrecentchat`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API listrecentchat:', error.message);
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gọi API lấy danh sách cuộc trò chuyện gần đây: ${error.message}`,
+									note: 'Vui lòng kiểm tra lại cấu hình OA và quyền truy cập.',
+									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền "Quyền quản lý tin nhắn người quan tâm" cho ứng dụng và có access_token hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Lấy lịch sử hội thoại với người dùng
@@ -582,44 +725,106 @@ export class ZaloOA implements INodeType {
 						const offset = this.getNodeParameter('offset', i) as number;
 						const count = this.getNodeParameter('count', i) as number;
 
-						const response = await axios.get(`${baseUrl}/conversation`, {
-							headers: {
-								access_token: accessToken,
-							},
-							params: {
+						try {
+							// Sử dụng API v2.0 vì API v3.0 chưa có tài liệu cho conversation
+							const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
+
+							// Tạo data parameter cho API conversation
+							const dataParam = JSON.stringify({
 								user_id: userId,
 								offset,
-								count: Math.min(count, 50), // Giới hạn tối đa 50 tin nhắn mỗi lần gọi
-							},
-						});
+								count: Math.min(count, 10), // Giới hạn tối đa 10 tin nhắn mỗi lần gọi theo tài liệu
+							});
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Gọi API lấy lịch sử hội thoại với người dùng
+							const response = await axios.get(
+								`${v2BaseUrl}/conversation`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API conversation:', error.message);
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gọi API lấy lịch sử hội thoại: ${error.message}`,
+									note: 'Vui lòng kiểm tra lại cấu hình OA và quyền truy cập.',
+									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền "Quyền quản lý tin nhắn người quan tâm" cho ứng dụng và có access_token hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Kiểm tra trạng thái tin nhắn
 					else if (operation === 'getMessageStatus') {
 						const messageId = this.getNodeParameter('messageId', i) as string;
 
-						const response = await axios.get(`${baseUrl}/getmessagestatus`, {
-							headers: {
-								access_token: accessToken,
-							},
-							params: {
-								message_id: messageId,
-							},
-						});
+						try {
+							// Sử dụng API v3.0 để kiểm tra trạng thái tin nhắn
+							const v3BaseUrl = 'https://openapi.zalo.me/v3.0/oa';
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Tạo data parameter cho API message/status
+							const dataParam = JSON.stringify({
+								message_id: messageId,
+							});
+
+							// Gọi API kiểm tra trạng thái tin nhắn
+							const response = await axios.get(
+								`${v3BaseUrl}/message/status`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi để debug
+							console.log('Lỗi khi gọi API message/status v3.0:', error.message);
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gọi API kiểm tra trạng thái tin nhắn: ${error.message}`,
+									note: 'Zalo đã thay đổi API getmessagestatus sang API message/status trong v3.0. Cần sử dụng tham số data với định dạng JSON.',
+									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền "Quyền quản lý tin nhắn người quan tâm" cho ứng dụng và có access_token hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Xóa tag
