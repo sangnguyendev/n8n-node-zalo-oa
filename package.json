@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-zalo-oa-integration",
-  "version": "0.5.4",
-  "description": "Tích hợp Zalo Official Account API v3.0 với MessageV3 API vào n8n",
+  "version": "0.5.14",
+  "description": "Tích hợp Zalo Official Account API v3.0 vào n8n",
   "keywords": [
     "n8n-community-node-package",
     "zalo",

@@ -346,45 +346,92 @@ export class ZaloOA implements INodeType {
 						const binaryData = this.getNodeParameter('binaryData', i) as boolean;
 						let response;
 
-						if (binaryData) {
-							const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
-							const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
+						try {
+							if (binaryData) {
+								const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
+								const binaryFile = items[i].binary![binaryProperty];
 
-							const formData = new FormData();
-							formData.append('file', binaryDataBuffer, {
-								filename: items[i].binary![binaryProperty].fileName,
-								contentType: items[i].binary![binaryProperty].mimeType,
-							});
+								if (binaryFile === undefined) {
+									throw new NodeOperationError(
+										this.getNode(),
+										`No binary data property "${binaryProperty}" exists on item.`,
+										{ itemIndex: i },
+									);
+								}
 
-							response = await axios.post(`${baseUrl}/upload/image`, formData, {
-								headers: {
-									access_token: accessToken,
-									...formData.getHeaders(),
-								},
-							});
-						} else {
-							const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+								const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
 
-							response = await axios.post(
-								`${baseUrl}/upload/image`,
-								{
-									url: imageUrl,
-								},
-								{
-									headers: {
-										access_token: accessToken,
-										'Content-Type': 'application/json',
+								// Tạo FormData đúng cách
+								const formData = new FormData();
+								formData.append('file', buffer, {
+									filename: binaryFile.fileName || 'image.jpg',
+									contentType: binaryFile.mimeType,
+								});
+
+								// Log để debug
+								console.log(`Uploading image with filename: ${binaryFile.fileName}, mime type: ${binaryFile.mimeType}`);
+
+								// Gửi request để upload hình ảnh
+								response = await axios.post(
+									`${baseUrl}/upload/image`,
+									formData,
+									{
+										headers: {
+											access_token: accessToken,
+											...formData.getHeaders(),
+										},
 									},
-								},
-							);
-						}
+								);
+							} else {
+								const imageUrl = this.getNodeParameter('imageUrl', i) as string;
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+								// Log để debug
+								console.log(`Uploading image from URL: ${imageUrl}`);
+
+								response = await axios.post(
+									`${baseUrl}/upload/image`,
+									{
+										url: imageUrl,
+									},
+									{
+										headers: {
+											access_token: accessToken,
+											'Content-Type': 'application/json',
+										},
+									},
+								);
+							}
+
+							// Log response để debug
+							console.log('Upload image response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Lỗi khi upload hình ảnh:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi upload hình ảnh: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Hãy kiểm tra định dạng hình ảnh và quyền truy cập của OA.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Upload file
@@ -392,45 +439,92 @@ export class ZaloOA implements INodeType {
 						const binaryData = this.getNodeParameter('binaryData', i) as boolean;
 						let response;
 
-						if (binaryData) {
-							const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
-							const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
+						try {
+							if (binaryData) {
+								const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
+								const binaryFile = items[i].binary?.[binaryProperty];
 
-							const formData = new FormData();
-							formData.append('file', binaryDataBuffer, {
-								filename: items[i].binary![binaryProperty].fileName,
-								contentType: items[i].binary![binaryProperty].mimeType,
-							});
+								if (binaryFile === undefined) {
+									throw new NodeOperationError(
+										this.getNode(),
+										`No binary data property "${binaryProperty}" exists on item.`,
+										{ itemIndex: i },
+									);
+								}
 
-							response = await axios.post(`${baseUrl}/upload/file`, formData, {
-								headers: {
-									access_token: accessToken,
-									...formData.getHeaders(),
-								},
-							});
-						} else {
-							const fileUrl = this.getNodeParameter('fileUrl', i) as string;
+								const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
 
-							response = await axios.post(
-								`${baseUrl}/upload/file`,
-								{
-									url: fileUrl,
-								},
-								{
-									headers: {
-										access_token: accessToken,
-										'Content-Type': 'application/json',
+								// Create FormData
+								const formData = new FormData();
+								formData.append('file', buffer, {
+									filename: binaryFile.fileName || 'file.pdf',
+									contentType: binaryFile.mimeType,
+								});
+
+								// Log for debugging
+								console.log(`Uploading file with filename: ${binaryFile.fileName}, mime type: ${binaryFile.mimeType}`);
+
+								// Send request to upload file
+								response = await axios.post(
+									`${baseUrl}/upload/file`,
+									formData,
+									{
+										headers: {
+											access_token: accessToken,
+											...formData.getHeaders(),
+										},
 									},
-								},
-							);
-						}
+								);
+							} else {
+								const fileUrl = this.getNodeParameter('fileUrl', i) as string;
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+								// Log for debugging
+								console.log(`Uploading file from URL: ${fileUrl}`);
+
+								response = await axios.post(
+									`${baseUrl}/upload/file`,
+									{
+										url: fileUrl,
+									},
+									{
+										headers: {
+											access_token: accessToken,
+											'Content-Type': 'application/json',
+										},
+									},
+								);
+							}
+
+							// Log response for debugging
+							console.log('Upload file response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log detailed error for debugging
+							console.log('Error uploading file:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Return error to user
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error uploading file: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the file format and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Lấy danh sách tag
@@ -439,6 +533,9 @@ export class ZaloOA implements INodeType {
 						const count = this.getNodeParameter('count', i) as number;
 
 						try {
+							// Log để debug
+							console.log(`Lấy danh sách tag với offset: ${offset}, count: ${count}`);
+
 							// Thử gọi API v3.0 trước
 							const response = await axios.get(`${baseUrl}/tag/gettagsofoa`, {
 								headers: {
@@ -450,8 +547,37 @@ export class ZaloOA implements INodeType {
 								},
 							});
 
+							// Log response để debug
+							console.log('Kết quả lấy danh sách tag:', JSON.stringify(response.data));
+
+							// Xử lý dữ liệu trả về để hiển thị rõ ràng tag_id và tag_name
+							let processedData = response.data;
+
+							// Kiểm tra nếu có dữ liệu tags trong response
+							if (processedData.data && Array.isArray(processedData.data.tags)) {
+								// Thêm trường display_info để hiển thị thông tin rõ ràng
+								processedData.data.tags = processedData.data.tags.map((tag: any) => {
+									// Đảm bảo tag có cả tag_id và tag_name
+									const tagId = tag.tag_id || tag.id || '';
+									const tagName = tag.tag_name || tag.name || '';
+
+									return {
+										...tag,
+										tag_id: tagId,
+										tag_name: tagName,
+										display_info: `ID: ${tagId} - Name: ${tagName}`
+									};
+								});
+
+								// Thêm hướng dẫn sử dụng
+								processedData.usage_guide = {
+									message: 'Sử dụng tag_id hoặc tag_name trong các node gắn tag hoặc xóa tag',
+									example: 'Khi gắn tag cho người dùng, hãy sử dụng giá trị tag_id hoặc tag_name từ danh sách này'
+								};
+							}
+
 							returnData.push({
-								json: response.data,
+								json: processedData,
 								pairedItem: {
 									item: i,
 								},
@@ -459,54 +585,200 @@ export class ZaloOA implements INodeType {
 						} catch (error) {
 							// Log lỗi để debug
 							console.log('Lỗi khi gọi API gettagsofoa v3.0:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
 							console.log('Đang thử lại với API v2.0...');
 
-							// Nếu API v3.0 thất bại, thử gọi API v2.0
-							const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
-							const response = await axios.get(`${v2BaseUrl}/tag/gettagsofoa`, {
-								headers: {
-									access_token: accessToken,
-								},
-								params: {
-									offset,
-									count,
-								},
-							});
+							try {
+								// Nếu API v3.0 thất bại, thử gọi API v2.0
+								const v2BaseUrl = 'https://openapi.zalo.me/v2.0/oa';
+								const response = await axios.get(`${v2BaseUrl}/tag/gettagsofoa`, {
+									headers: {
+										access_token: accessToken,
+									},
+									params: {
+										offset,
+										count,
+									},
+								});
 
-							returnData.push({
-								json: response.data,
-								pairedItem: {
-									item: i,
-								},
-							});
+								// Log response để debug
+								console.log('Kết quả lấy danh sách tag (API v2.0):', JSON.stringify(response.data));
+
+								// Xử lý dữ liệu trả về để hiển thị rõ ràng tag_id và tag_name
+								let processedData = response.data;
+
+								// Kiểm tra nếu có dữ liệu tags trong response
+								if (processedData.data && Array.isArray(processedData.data.tags)) {
+									// Thêm trường display_info để hiển thị thông tin rõ ràng
+									processedData.data.tags = processedData.data.tags.map((tag: any) => {
+										// Đảm bảo tag có cả tag_id và tag_name
+										const tagId = tag.tag_id || tag.id || '';
+										const tagName = tag.tag_name || tag.name || '';
+
+										return {
+											...tag,
+											tag_id: tagId,
+											tag_name: tagName,
+											display_info: `ID: ${tagId} - Name: ${tagName}`
+										};
+									});
+
+									// Thêm hướng dẫn sử dụng
+									processedData.usage_guide = {
+										message: 'Sử dụng tag_id hoặc tag_name trong các node gắn tag hoặc xóa tag',
+										example: 'Khi gắn tag cho người dùng, hãy sử dụng giá trị tag_id hoặc tag_name từ danh sách này'
+									};
+								}
+
+								returnData.push({
+									json: processedData,
+									pairedItem: {
+										item: i,
+									},
+								});
+							} catch (innerError) {
+								// Log lỗi chi tiết để debug
+								console.log('Lỗi khi gọi API gettagsofoa v2.0:', innerError.message);
+								if (innerError.response) {
+									console.log('Response status:', innerError.response.status);
+									console.log('Response data:', JSON.stringify(innerError.response.data));
+								}
+
+								// Trả về lỗi để người dùng biết
+								returnData.push({
+									json: {
+										error: true,
+										message: `Lỗi khi lấy danh sách tag: ${innerError.message}`,
+										response: innerError.response?.data || {},
+										suggestion: 'Vui lòng kiểm tra lại quyền truy cập của OA và access_token.',
+									},
+									pairedItem: {
+										item: i,
+									},
+								});
+							}
 						}
 					}
 
 					// Gán tag cho người theo dõi
 					else if (operation === 'assignTag') {
-						const userId = this.getNodeParameter('userId', i) as string;
-						const tagId = this.getNodeParameter('tagId', i) as string;
+						try {
+							const userId = this.getNodeParameter('userId', i) as string;
+							const tagId = this.getNodeParameter('tagId', i) as string;
 
-						const response = await axios.post(
-							`${baseUrl}/tag/tagfollower`,
-							{
-								user_id: userId,
-								tag_id: tagId,
-							},
-							{
-								headers: {
-									access_token: accessToken,
-									'Content-Type': 'application/json',
+							// Log để debug
+							console.log(`Gán tag cho người dùng với user_id: ${userId}, tag_id: ${tagId}`);
+
+							// Trong API v3, endpoint vẫn là /tag/taguser nhưng cần sử dụng tag_name thay vì tag_id
+							// Vì hiện tại chúng ta đang sử dụng tag_id, chúng ta sẽ thử cả hai cách
+
+							// Cách 1: Sử dụng tag_id (cách cũ)
+							try {
+								const response = await axios.post(
+									`${baseUrl}/tag/taguser`,
+									{
+										user_id: userId,
+										tag_id: tagId,
+									},
+									{
+										headers: {
+											access_token: accessToken,
+											'Content-Type': 'application/json',
+										},
+									},
+								);
+
+								// Log response để debug
+								console.log('Kết quả gán tag (sử dụng tag_id):', JSON.stringify(response.data));
+
+								returnData.push({
+									json: response.data,
+									pairedItem: {
+										item: i,
+									},
+								});
+								// Nếu thành công, bỏ qua cách 2
+								break;
+							} catch (error) {
+								// Log lỗi để debug
+								console.log('Lỗi khi gán tag sử dụng tag_id:', error.message);
+								if (error.response) {
+									console.log('Response status:', error.response.status);
+									console.log('Response data:', JSON.stringify(error.response.data));
+								}
+								// Tiếp tục thử cách 2
+							}
+
+							// Cách 2: Sử dụng tag_name (cách mới trong API v3)
+							try {
+								const response = await axios.post(
+									`${baseUrl}/tag/taguser`,
+									{
+										user_id: userId,
+										tag_name: tagId, // Sử dụng tagId như là tag_name
+									},
+									{
+										headers: {
+											access_token: accessToken,
+											'Content-Type': 'application/json',
+										},
+									},
+								);
+
+								// Log response để debug
+								console.log('Kết quả gán tag (sử dụng tag_name):', JSON.stringify(response.data));
+
+								returnData.push({
+									json: response.data,
+									pairedItem: {
+										item: i,
+									},
+								});
+							} catch (error) {
+								// Log lỗi để debug
+								console.log('Lỗi khi gán tag sử dụng tag_name:', error.message);
+								if (error.response) {
+									console.log('Response status:', error.response.status);
+									console.log('Response data:', JSON.stringify(error.response.data));
+								}
+
+								// Trả về lỗi để người dùng biết
+								returnData.push({
+									json: {
+										error: true,
+										message: `Lỗi khi gán tag cho người dùng: ${error.message}`,
+										response: error.response?.data || {},
+										suggestion: 'Vui lòng kiểm tra lại user_id và tag_id/tag_name. API v3 yêu cầu sử dụng tag_name thay vì tag_id.',
+									},
+									pairedItem: {
+										item: i,
+									},
+								});
+							}
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Lỗi khi gán tag cho người dùng:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi gán tag cho người dùng: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Vui lòng kiểm tra lại user_id và tag_id/tag_name. API v3 yêu cầu sử dụng tag_name thay vì tag_id.',
 								},
-							},
-						);
-
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 
 					// Lấy thông tin Official Account
@@ -615,54 +887,103 @@ export class ZaloOA implements INodeType {
 					// Upload GIF image
 					else if (operation === 'uploadGif') {
 						const binaryData = this.getNodeParameter('binaryData', i) as boolean;
-						const formData = new FormData();
+						let response;
 
-						if (binaryData) {
-							const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
-							const binaryFile = items[i].binary![binaryProperty];
+						try {
+							if (binaryData) {
+								const binaryProperty = this.getNodeParameter('binaryProperty', i) as string;
+								const binaryFile = items[i].binary?.[binaryProperty];
 
-							if (binaryFile === undefined) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`No binary data property "${binaryProperty}" exists on item.`,
-									{ itemIndex: i },
+								if (binaryFile === undefined) {
+									throw new NodeOperationError(
+										this.getNode(),
+										`No binary data property "${binaryProperty}" exists on item.`,
+										{ itemIndex: i },
+									);
+								}
+
+								const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
+
+								// Create FormData
+								const formData = new FormData();
+								formData.append('file', buffer, {
+									filename: binaryFile.fileName || 'image.gif',
+									contentType: binaryFile.mimeType,
+								});
+
+								// Log for debugging
+								console.log(`Uploading GIF with filename: ${binaryFile.fileName}, mime type: ${binaryFile.mimeType}`);
+
+								// Send request to upload GIF
+								response = await axios.post(
+									`${baseUrl}/upload/gif`,
+									formData,
+									{
+										headers: {
+											access_token: accessToken,
+											...formData.getHeaders(),
+										},
+									},
+								);
+							} else {
+								const gifUrl = this.getNodeParameter('gifUrl', i) as string;
+
+								// Log for debugging
+								console.log(`Downloading GIF from URL: ${gifUrl}`);
+
+								// Download GIF from URL
+								const gifResponse = await axios.get(gifUrl, { responseType: 'arraybuffer' });
+
+								// Create FormData
+								const formData = new FormData();
+								formData.append('file', Buffer.from(gifResponse.data), {
+									filename: 'image.gif',
+									contentType: 'image/gif',
+								});
+
+								// Send request to upload GIF
+								response = await axios.post(
+									`${baseUrl}/upload/gif`,
+									formData,
+									{
+										headers: {
+											access_token: accessToken,
+											...formData.getHeaders(),
+										},
+									},
 								);
 							}
 
-							const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
-							formData.append('file', buffer, {
-								filename: binaryFile.fileName || 'image.gif',
-								contentType: binaryFile.mimeType,
-							});
-						} else {
-							const gifUrl = this.getNodeParameter('gifUrl', i) as string;
+							// Log response for debugging
+							console.log('Upload GIF response:', JSON.stringify(response.data));
 
-							// Tải GIF từ URL
-							const gifResponse = await axios.get(gifUrl, { responseType: 'arraybuffer' });
-							formData.append('file', Buffer.from(gifResponse.data), {
-								filename: 'image.gif',
-								contentType: 'image/gif',
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log detailed error for debugging
+							console.log('Error uploading GIF:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Return error to user
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error uploading GIF: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the GIF format and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
 							});
 						}
-
-						// Gửi request để upload GIF
-						const response = await axios.post(
-							`${baseUrl}/upload/gif`,
-							formData.getBuffer(),
-							{
-								headers: {
-									...formData.getHeaders(),
-									access_token: accessToken,
-								},
-							},
-						);
-
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
 					}
 
 					// Lấy danh sách cuộc trò chuyện gần đây
@@ -781,26 +1102,28 @@ export class ZaloOA implements INodeType {
 
 						try {
 							// Sử dụng API v3.0 để kiểm tra trạng thái tin nhắn
-							const v3BaseUrl = 'https://openapi.zalo.me/v3.0/oa';
+							// Log để debug
+							console.log(`Kiểm tra trạng thái tin nhắn với message_id: ${messageId}`);
 
-							// Tạo data parameter cho API message/status
-							const dataParam = JSON.stringify({
-								message_id: messageId,
-							});
+							// Trong API v3, chúng ta gửi trực tiếp message_id trong body
 
 							// Gọi API kiểm tra trạng thái tin nhắn
-							const response = await axios.get(
-								`${v3BaseUrl}/message/status`,
+							// Trong API v3, endpoint là /message/status và cần gửi dữ liệu dạng POST
+							const response = await axios.post(
+								`${baseUrl}/message/status`,
 								{
-									params: {
-										data: dataParam,
-									},
+									message_id: messageId,
+								},
+								{
 									headers: {
 										access_token: accessToken,
 										'Content-Type': 'application/json',
 									},
 								},
 							);
+
+							// Log response để debug
+							console.log('Kết quả kiểm tra trạng thái tin nhắn:', JSON.stringify(response.data));
 
 							returnData.push({
 								json: response.data,
@@ -809,15 +1132,20 @@ export class ZaloOA implements INodeType {
 								},
 							});
 						} catch (error) {
-							// Log lỗi để debug
+							// Log lỗi chi tiết để debug
 							console.log('Lỗi khi gọi API message/status v3.0:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
 
 							// Trả về lỗi để người dùng biết
 							returnData.push({
 								json: {
 									error: true,
 									message: `Lỗi khi gọi API kiểm tra trạng thái tin nhắn: ${error.message}`,
-									note: 'Zalo đã thay đổi API getmessagestatus sang API message/status trong v3.0. Cần sử dụng tham số data với định dạng JSON.',
+									response: error.response?.data || {},
+									note: 'Zalo đã thay đổi API getmessagestatus sang API message/status trong v3.0 và yêu cầu sử dụng phương thức POST thay vì GET.',
 									suggestion: 'Hãy đảm bảo rằng bạn đã cấp quyền "Quyền quản lý tin nhắn người quan tâm" cho ứng dụng và có access_token hợp lệ.',
 								},
 								pairedItem: {
@@ -935,56 +1263,1037 @@ export class ZaloOA implements INodeType {
 
 					// Cập nhật thông tin người theo dõi
 					else if (operation === 'updateFollowerInfo') {
-						const userId = this.getNodeParameter('userId', i) as string;
-						const infoType = this.getNodeParameter('infoType', i) as string;
-						const infoValue = this.getNodeParameter('infoValue', i) as string;
+						try {
+							const userId = this.getNodeParameter('userId', i) as string;
+							const infoType = this.getNodeParameter('infoType', i) as string;
+							const infoValue = this.getNodeParameter('infoValue', i) as string;
 
-						// Prepare data based on info type
-						const data: Record<string, any> = {
-							user_id: userId,
-						};
+							// Trong API v3, cập nhật thông tin người theo dõi sử dụng endpoint user/update
+							// và thông tin được đặt trong trường shared_info
+							const sharedInfo: Record<string, string> = {};
 
-						// Add specific field based on infoType
-						switch(infoType) {
-							case 'name':
-								data.name = infoValue;
-								break;
-							case 'phone':
-								data.phone = infoValue;
-								break;
-							case 'email':
-								data.email = infoValue;
-								break;
-							case 'address':
-								data.address = infoValue;
-								break;
-							case 'city':
-								data.city = infoValue;
-								break;
-							case 'birthday':
-								data.birthday = infoValue; // Format should be YYYY-MM-DD
-								break;
-							default:
-								break;
-						}
+							// Add specific field based on infoType
+							switch(infoType) {
+								case 'name':
+									sharedInfo.name = infoValue;
+									break;
+								case 'phone':
+									sharedInfo.phone = infoValue;
+									break;
+								case 'email':
+									sharedInfo.email = infoValue;
+									break;
+								case 'address':
+									sharedInfo.address = infoValue;
+									break;
+								case 'city':
+									sharedInfo.city = infoValue;
+									break;
+								case 'birthday':
+									sharedInfo.birthday = infoValue; // Format should be YYYY-MM-DD
+									break;
+								default:
+									break;
+							}
 
-						const response = await axios.post(
-							`${baseUrl}/updatefollowerinfo`,
-							data,
-							{
-								headers: {
-									access_token: accessToken,
-									'Content-Type': 'application/json',
+							// Tạo data parameter cho API user/update
+							const dataParam = JSON.stringify({
+								user_id: userId,
+								shared_info: sharedInfo
+							});
+
+							// Log để debug
+							console.log(`Cập nhật thông tin người dùng với user_id: ${userId}, thông tin: ${JSON.stringify(sharedInfo)}`);
+
+							// Gọi API cập nhật thông tin người theo dõi
+							const response = await axios.post(
+								`${baseUrl}/user/update`,
+								{
+									data: dataParam
 								},
-							},
-						);
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
 
-						returnData.push({
-							json: response.data,
-							pairedItem: {
-								item: i,
-							},
-						});
+							// Log response để debug
+							console.log('Kết quả cập nhật thông tin người dùng:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Lỗi khi cập nhật thông tin người dùng:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi cập nhật thông tin người dùng: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Vui lòng kiểm tra lại user_id và quyền truy cập của OA. API v3 yêu cầu định dạng dữ liệu khác với v2.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Tạo bài viết
+					else if (operation === 'createArticle') {
+						try {
+							// Lấy các tham số
+							const title = this.getNodeParameter('title', i) as string;
+							const author = this.getNodeParameter('author', i) as string;
+							const description = this.getNodeParameter('description', i) as string;
+							const content = this.getNodeParameter('content', i) as string;
+							const coverUrl = this.getNodeParameter('coverUrl', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+							const comment = this.getNodeParameter('comment', i) as string || 'show';
+
+							// Tạo cấu trúc body cho bài viết
+							const body = [
+								{
+									type: 'text',
+									content,
+								},
+							];
+
+							// Tạo cấu trúc cover cho bài viết
+							const cover = {
+								cover_type: 'photo',
+								photo_url: coverUrl,
+								status: 'show',
+							};
+
+							// Log để debug
+							console.log(`Creating article with title: ${title}`);
+
+							// Sử dụng API v3.0 với endpoint article/create
+							const v3BaseUrl = 'https://openapi.zalo.me/v2.0';
+
+							// Tạo request để tạo bài viết
+							const response = await axios.post(
+								`${v3BaseUrl}/article/create`,
+								{
+									type: 'normal',
+									title,
+									author,
+									cover,
+									description,
+									body,
+									status,
+									comment,
+								},
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Create article response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error creating article:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi tạo bài viết: ${error.message}`,
+									response: error.response?.data || {},
+									note: 'API article/create trong Zalo OA API v3.0 gặp lỗi.',
+									suggestion: 'Vui lòng kiểm tra các tham số bài viết và quyền truy cập của OA. Đảm bảo rằng URL hình ảnh cover hợp lệ và có thể truy cập được.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Cập nhật bài viết
+					else if (operation === 'updateArticle') {
+						try {
+							// Lấy các tham số
+							const token = this.getNodeParameter('token', i) as string;
+							const title = this.getNodeParameter('title', i) as string;
+							const author = this.getNodeParameter('author', i) as string;
+							const description = this.getNodeParameter('description', i) as string;
+							const content = this.getNodeParameter('content', i) as string;
+							const coverUrl = this.getNodeParameter('coverUrl', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+							const comment = this.getNodeParameter('comment', i) as string || 'show';
+
+							// Tạo cấu trúc body cho bài viết
+							const body = [
+								{
+									type: 'text',
+									content,
+								},
+							];
+
+							// Tạo cấu trúc cover cho bài viết
+							const cover = {
+								cover_type: 'photo',
+								photo_url: coverUrl,
+								status: 'show',
+							};
+
+							// Log để debug
+							console.log(`Updating article with token: ${token}`);
+
+							// Sử dụng API v3.0 với endpoint article/update
+							const v3BaseUrl = 'https://openapi.zalo.me/v2.0';
+
+							// Tạo request để cập nhật bài viết
+							const response = await axios.post(
+								`${v3BaseUrl}/article/update`,
+								{
+									id: token,
+									type: 'normal',
+									title,
+									author,
+									cover,
+									description,
+									body,
+									status,
+									comment,
+								},
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Update article response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error updating article:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi cập nhật bài viết: ${error.message}`,
+									response: error.response?.data || {},
+									note: 'API article/update trong Zalo OA API v3.0 gặp lỗi.',
+									suggestion: 'Vui lòng kiểm tra token bài viết và các tham số. Đảm bảo rằng bài viết vẫn tồn tại và URL hình ảnh cover hợp lệ.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Xóa bài viết
+					else if (operation === 'removeArticle') {
+						try {
+							// Lấy token của bài viết cần xóa
+							const token = this.getNodeParameter('token', i) as string;
+
+							// Log để debug
+							console.log(`Removing article with token: ${token}`);
+
+							// Sử dụng API v3.0 với endpoint article/remove
+							const v3BaseUrl = 'https://openapi.zalo.me/v2.0';
+
+							// Tạo request để xóa bài viết
+							const response = await axios.post(
+								`${v3BaseUrl}/article/remove`,
+								{
+									id: token,
+								},
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Remove article response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error removing article:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi xóa bài viết: ${error.message}`,
+									response: error.response?.data || {},
+									note: 'API article/remove trong Zalo OA API v3.0 gặp lỗi.',
+									suggestion: 'Vui lòng kiểm tra token bài viết. Đảm bảo rằng bài viết vẫn tồn tại và bạn có quyền xóa nó.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Lấy danh sách bài viết
+					else if (operation === 'getArticleList') {
+						try {
+							// Lấy các tham số
+							const offset = this.getNodeParameter('offset', i) as number;
+							const limit = this.getNodeParameter('limit', i) as number;
+							const type = this.getNodeParameter('type', i) as string; // Giá trị mặc định 'normal' đã được định nghĩa trong ZaloOADescription.ts
+
+							// Log để debug
+							console.log(`Lấy danh sách bài viết với offset: ${offset}, limit: ${limit}, type: ${type}`);
+
+							// Sử dụng API v2.0 với endpoint article/getslice
+							// Theo tài liệu Zalo OA, API article/getslice vẫn được hỗ trợ trong v2.0
+							const v2BaseUrl = 'https://openapi.zalo.me/v2.0';
+
+							// Gọi API lấy danh sách bài viết
+							const response = await axios.get(
+								`${v2BaseUrl}/article/getslice?offset=${offset}&limit=${Math.min(limit, 50)}&type=${type}`,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Kết quả lấy danh sách bài viết:', JSON.stringify(response.data));
+
+							// Xử lý dữ liệu trả về để hiển thị rõ ràng token bài viết
+							const processedData = response.data;
+
+							// Kiểm tra nếu có dữ liệu bài viết trong response
+							if (processedData.data && Array.isArray(processedData.data.medias)) {
+								// Thêm hướng dẫn sử dụng token bài viết
+								processedData.usage_guide = {
+									message: 'Sử dụng trường "id" của bài viết làm token bài viết',
+									example: 'Khi lấy chi tiết bài viết, hãy sử dụng giá trị "id" của bài viết làm token'
+								};
+							}
+
+							returnData.push({
+								json: processedData,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Lỗi khi lấy danh sách bài viết:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Không cần thử lại với API v2.0 vì API v2.0 đã bị tắt
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi lấy danh sách bài viết: ${error.message}`,
+									response: error.response?.data || {},
+									note: 'API article/getslice trong Zalo OA API v2.0 gặp lỗi. Theo tài liệu mới nhất, endpoint này chỉ được hỗ trợ trong v2.0.',
+									suggestion: 'Vui lòng kiểm tra lại tham số type (chỉ chấp nhận giá trị "normal" hoặc "video"), quyền truy cập của OA và access_token. Nếu vẫn gặp lỗi, hãy tham khảo tài liệu API mới nhất của Zalo OA tại https://developers.zalo.me/docs.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Lấy chi tiết bài viết
+					else if (operation === 'getArticleDetail') {
+						try {
+							// Lấy token của bài viết
+							const token = this.getNodeParameter('token', i) as string;
+
+							// Log để debug
+							console.log(`Getting article detail with token: ${token}`);
+
+							// Tạo data parameter cho API getdetail
+							const dataParam = JSON.stringify({
+								id: token,
+							});
+
+							// Sử dụng API v3.0 với endpoint article/getdetail
+							const v3BaseUrl = 'https://openapi.zalo.me/v2.0';
+
+							// Gọi API lấy chi tiết bài viết
+							const response = await axios.get(
+								`${v3BaseUrl}/article/getdetail`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Get article detail response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error getting article detail:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Lỗi khi lấy chi tiết bài viết: ${error.message}`,
+									response: error.response?.data || {},
+									note: 'API article/getdetail trong Zalo OA API v3.0 gặp lỗi. Vui lòng kiểm tra token bài viết.',
+									suggestion: 'Hãy đảm bảo rằng token bài viết chính xác và bài viết vẫn tồn tại. Nếu vẫn gặp lỗi, hãy tham khảo tài liệu API mới nhất của Zalo OA.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Tạo sản phẩm
+					else if (operation === 'createProduct') {
+						try {
+							// Lấy các tham số
+							const name = this.getNodeParameter('name', i) as string;
+							const price = this.getNodeParameter('price', i) as number;
+							const description = this.getNodeParameter('description', i) as string;
+							const code = this.getNodeParameter('code', i) as string;
+							const categoryId = this.getNodeParameter('categoryId', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+
+							// Lấy danh sách hình ảnh
+							const photosCollection = this.getNodeParameter('photos', i) as {
+								photosValues: Array<{
+									photoUrl: string;
+								}>;
+							};
+
+							const photos = photosCollection.photosValues.map((photo) => ({
+								photo_url: photo.photoUrl,
+							}));
+
+							// Log để debug
+							console.log(`Creating product with name: ${name}, price: ${price}`);
+
+							// Tạo request để tạo sản phẩm
+							const response = await axios.post(
+								`${baseUrl}/store/product/create`,
+								{
+									name,
+									price,
+									description,
+									code,
+									category_id: categoryId,
+									photos,
+									status,
+								},
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Create product response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error creating product:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error creating product: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the product parameters and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Cập nhật sản phẩm
+					else if (operation === 'updateProduct') {
+						try {
+							// Lấy các tham số
+							const productId = this.getNodeParameter('productId', i) as string;
+							const name = this.getNodeParameter('name', i) as string;
+							const price = this.getNodeParameter('price', i) as number;
+							const description = this.getNodeParameter('description', i) as string;
+							const code = this.getNodeParameter('code', i) as string;
+							const categoryId = this.getNodeParameter('categoryId', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+
+							// Lấy danh sách hình ảnh
+							const photosCollection = this.getNodeParameter('photos', i) as {
+								photosValues: Array<{
+									photoUrl: string;
+								}>;
+							};
+
+							const photos = photosCollection.photosValues.map((photo) => ({
+								photo_url: photo.photoUrl,
+							}));
+
+							// Log để debug
+							console.log(`Updating product with ID: ${productId}, name: ${name}`);
+
+							// Tạo request để cập nhật sản phẩm
+							const response = await axios.post(
+								`${baseUrl}/store/product/update`,
+								{
+									id: productId,
+									name,
+									price,
+									description,
+									code,
+									category_id: categoryId,
+									photos,
+									status,
+								},
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Update product response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error updating product:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error updating product: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the product ID and parameters.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Lấy thông tin sản phẩm
+					else if (operation === 'getProductInfo') {
+						try {
+							// Lấy ID sản phẩm
+							const productId = this.getNodeParameter('productId', i) as string;
+
+							// Log để debug
+							console.log(`Getting product info with ID: ${productId}`);
+
+							// Tạo data parameter cho API getproduct
+							const dataParam = JSON.stringify({
+								id: productId,
+							});
+
+							// Gọi API lấy thông tin sản phẩm
+							const response = await axios.get(
+								`${baseUrl}/store/product/getproduct`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Get product info response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error getting product info:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error getting product info: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the product ID.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Lấy danh sách sản phẩm
+					else if (operation === 'getProductList') {
+						try {
+							// Lấy các tham số
+							const offset = this.getNodeParameter('offset', i) as number;
+							const limit = this.getNodeParameter('limit', i) as number;
+							const categoryId = this.getNodeParameter('categoryId', i) as string || '';
+
+							// Log để debug
+							console.log(`Getting product list with offset: ${offset}, limit: ${limit}`);
+
+							// Tạo data parameter cho API getproductofoa
+							const dataParam: Record<string, any> = {
+								offset,
+								limit: Math.min(limit, 50), // Giới hạn tối đa 50 sản phẩm mỗi lần gọi
+							};
+
+							// Thêm category_id nếu có
+							if (categoryId) {
+								dataParam.category_id = categoryId;
+							}
+
+							// Gọi API lấy danh sách sản phẩm
+							const response = await axios.get(
+								`${baseUrl}/store/product/getproductofoa`,
+								{
+									params: {
+										data: JSON.stringify(dataParam),
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Get product list response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error getting product list:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error getting product list: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the parameters and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Tạo danh mục
+					else if (operation === 'createCategory') {
+						try {
+							// Lấy các tham số
+							const name = this.getNodeParameter('name', i) as string;
+							const description = this.getNodeParameter('description', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+							const parentId = this.getNodeParameter('parentId', i) as string || '';
+
+							// Tạo dữ liệu cho request
+							const requestData: Record<string, any> = {
+								name,
+								description,
+								status,
+							};
+
+							// Thêm parent_id nếu có
+							if (parentId) {
+								requestData.parent_id = parentId;
+							}
+
+							// Log để debug
+							console.log(`Creating category with name: ${name}`);
+
+							// Tạo request để tạo danh mục
+							const response = await axios.post(
+								`${baseUrl}/store/category/create`,
+								requestData,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Create category response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error creating category:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error creating category: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the category parameters and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Cập nhật danh mục
+					else if (operation === 'updateCategory') {
+						try {
+							// Lấy các tham số
+							const categoryId = this.getNodeParameter('categoryId', i) as string;
+							const name = this.getNodeParameter('name', i) as string;
+							const description = this.getNodeParameter('description', i) as string;
+							const status = this.getNodeParameter('status', i) as string || 'show';
+							const parentId = this.getNodeParameter('parentId', i) as string || '';
+
+							// Tạo dữ liệu cho request
+							const requestData: Record<string, any> = {
+								id: categoryId,
+								name,
+								description,
+								status,
+							};
+
+							// Thêm parent_id nếu có
+							if (parentId) {
+								requestData.parent_id = parentId;
+							}
+
+							// Log để debug
+							console.log(`Updating category with ID: ${categoryId}, name: ${name}`);
+
+							// Tạo request để cập nhật danh mục
+							const response = await axios.post(
+								`${baseUrl}/store/category/update`,
+								requestData,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Update category response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error updating category:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error updating category: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the category ID and parameters.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Lấy danh sách danh mục
+					else if (operation === 'getCategoryList') {
+						try {
+							// Lấy các tham số
+							const offset = this.getNodeParameter('offset', i) as number;
+							const limit = this.getNodeParameter('limit', i) as number;
+
+							// Log để debug
+							console.log(`Getting category list with offset: ${offset}, limit: ${limit}`);
+
+							// Tạo data parameter cho API getcategoryofoa
+							const dataParam = JSON.stringify({
+								offset,
+								limit: Math.min(limit, 50), // Giới hạn tối đa 50 danh mục mỗi lần gọi
+							});
+
+							// Gọi API lấy danh sách danh mục
+							const response = await axios.get(
+								`${baseUrl}/store/category/getcategoryofoa`,
+								{
+									params: {
+										data: dataParam,
+									},
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Get category list response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error getting category list:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error getting category list: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the parameters and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
+					}
+
+					// Tạo đơn hàng
+					else if (operation === 'createOrder') {
+						try {
+							// Lấy các tham số
+							const userId = this.getNodeParameter('userId', i) as string;
+							const shippingName = this.getNodeParameter('shippingName', i) as string;
+							const shippingPhone = this.getNodeParameter('shippingPhone', i) as string;
+							const shippingAddress = this.getNodeParameter('shippingAddress', i) as string;
+							const shippingCity = this.getNodeParameter('shippingCity', i) as string;
+							const shippingFee = this.getNodeParameter('shippingFee', i) as number;
+							const discount = this.getNodeParameter('discount', i) as number;
+							const total = this.getNodeParameter('total', i) as number;
+
+							// Lấy danh sách sản phẩm trong đơn hàng
+							const orderItemsCollection = this.getNodeParameter('orderItems', i) as {
+								itemsValues: Array<{
+									productId: string;
+									quantity: number;
+									price: number;
+								}>;
+							};
+
+							const items = orderItemsCollection.itemsValues.map((item) => ({
+								product_id: item.productId,
+								quantity: item.quantity,
+								price: item.price,
+							}));
+
+							// Tạo dữ liệu cho request
+							const requestData = {
+								user_id: userId,
+								shipping: {
+									name: shippingName,
+									phone: shippingPhone,
+									address: shippingAddress,
+									city: shippingCity,
+								},
+								items,
+								shipping_fee: shippingFee,
+								discount,
+								total,
+							};
+
+							// Log để debug
+							console.log(`Creating order for user: ${userId}`);
+
+							// Tạo request để tạo đơn hàng
+							const response = await axios.post(
+								`${baseUrl}/store/order/create`,
+								requestData,
+								{
+									headers: {
+										access_token: accessToken,
+										'Content-Type': 'application/json',
+									},
+								},
+							);
+
+							// Log response để debug
+							console.log('Create order response:', JSON.stringify(response.data));
+
+							returnData.push({
+								json: response.data,
+								pairedItem: {
+									item: i,
+								},
+							});
+						} catch (error) {
+							// Log lỗi chi tiết để debug
+							console.log('Error creating order:', error.message);
+							if (error.response) {
+								console.log('Response status:', error.response.status);
+								console.log('Response data:', JSON.stringify(error.response.data));
+							}
+
+							// Trả về lỗi để người dùng biết
+							returnData.push({
+								json: {
+									error: true,
+									message: `Error creating order: ${error.message}`,
+									response: error.response?.data || {},
+									suggestion: 'Please check the order parameters and OA access permissions.',
+								},
+								pairedItem: {
+									item: i,
+								},
+							});
+						}
 					}
 				}
 			} catch (error) {
