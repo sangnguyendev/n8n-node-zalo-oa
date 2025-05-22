@@ -1667,11 +1667,6 @@ export class ZaloOA implements INodeType {
 							// Log để debug
 							console.log(`Getting article detail with token: ${token}`);
 
-							// Tạo data parameter cho API getdetail
-							const dataParam = JSON.stringify({
-								id: token,
-							});
-
 							// Sử dụng API v3.0 với endpoint article/getdetail
 							const v3BaseUrl = 'https://openapi.zalo.me/v2.0';
 
@@ -1680,7 +1675,7 @@ export class ZaloOA implements INodeType {
 								`${v3BaseUrl}/article/getdetail`,
 								{
 									params: {
-										data: dataParam,
+										id: token
 									},
 									headers: {
 										access_token: accessToken,
