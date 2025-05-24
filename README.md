@@ -1,4 +1,4 @@
-# n8n-nodes-zalo-oa
+# n8n-nodes-zalo-oa-integration
 
 Bộ node tích hợp Zalo Official Account (OA) vào n8n, cho phép tự động hóa tương tác với người dùng Zalo thông qua Zalo OA API v3.0.
 
